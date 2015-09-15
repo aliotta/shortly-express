@@ -45,9 +45,20 @@ function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
+  //res.render('index');
 });
 
-// var loggedIn = false;
+app.get('/index', function(req, res){
+  res.render('index');
+});
+
+app.get('/signup', function(req, res){
+  res.render('signup');
+});
+
+app.get('/layout', function(req, res){
+  res.render('layout');
+});
 
 app.post('/links', 
 function(req, res) {
@@ -58,17 +69,17 @@ function(req, res) {
   }
 
    db.knex('users').select('loggedIn').then(function(data){
-    console.log("are you there, dear user? ", data);
-      if(data[0].loggedIn === 0){
+    console.log("are you there, dear user? ", data, "name ", data[0]);
+      if(data[0].loggedIn === 1){
         //go to this other post request
-        res.redirect('/links');
+        //res.redirect('/index');
+        console.log("you're logged in!");
+      } else if (data[0].loggedIn === 0){
+        console.log("YOu are not allowed");
+        res.redirect('/login');
       }
    });
-   
-
-
-
-  
+     
   new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
       res.send(200, found.attributes);
@@ -98,14 +109,39 @@ function(req, res) {
 
 app.post('/login', 
 function(req, res){
-  console.log(req);
   var username = req.body.username; 
   var password = req.body.password; 
   var isLoggedIn = 1; 
-  console.log(username);
-  db.knex('users').insert({user_id: username}, {password: password}, {loggedIn: isLoggedIn});
-  res.redirect('/links');
-  // res.send(201, "you're a rockstar"); 
+
+  new User({
+    user_id: username, 
+    password: password
+  }).fetch().then(function(found){
+    if(found) {
+      //do something
+      console.log("I ALREADY EXIST! :D");
+    } else {
+      console.log("I am in the else statement! CREATE MEEEEE");
+      //If user is not found, then create the user and send it to the database. 
+      Users.create({
+        user_id: username, 
+        password: password, 
+        loggedIn: isLoggedIn
+      })
+      .then(function(){
+        res.send(200, "YAY!");
+      });
+    }
+  })
+  console.log("trying to insert: ", username, " ", password, " ", isLoggedIn);
+  // db.knex.insert({user_id: username}, {password: password}, {salt: "1234"}, {loggedIn: isLoggedIn}).then(function(user){
+  //   console.log("Callback for insert ", user, " ", user.username, " ", user.password )
+  // });
+  //db.knex('users').update('password', password);
+  //db.knex('users').update('loggedIn', isLoggedIn);
+  console.log("Should have inserted")
+  res.redirect('/index');
+  res.send(201, "you're a rockstar"); 
 });
 
 

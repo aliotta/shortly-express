@@ -5,14 +5,12 @@ var Promise = require('bluebird');
 
 
 var User = db.Model.extend({
-  tableName: 'consumers', 
+  tableName: 'users', 
   defaults: {
+    salt: "tablesalt",
     loggedIn: 0
-  },
+  }, 
 
-  initialize: function() {
-    
-  }
 });
 
 

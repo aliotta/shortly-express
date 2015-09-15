@@ -15,7 +15,7 @@ var Link = require('../app/models/link');
 // authentication tests.
 /************************************************************/
 var xbeforeEach = function(){
-  db.knex.schema.dropTable('users');
+  //db.knex.schema.dropTable('users');
   db.knex.schema.dropTable('clicks');
   db.knex.schema.dropTable('urls');
 };
