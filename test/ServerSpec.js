@@ -7,18 +7,23 @@ var User = require('../app/models/user');
 var Links = require('../app/collections/links');
 var Link = require('../app/models/link');
 
+
 /************************************************************/
 // Mocha doesn't have a way to designate pending before blocks.
 // Mimic the behavior of xit and xdescribe with xbeforeEach.
 // Remove the 'x' from beforeEach block when working on
 // authentication tests.
 /************************************************************/
-var xbeforeEach = function(){};
+var xbeforeEach = function(){
+  db.knex.schema.dropTable('users');
+  db.knex.schema.dropTable('clicks');
+  db.knex.schema.dropTable('urls');
+};
 /************************************************************/
 
 
 describe('', function() {
-
+  var requestWithSession = request.defaults({jar: true});
   beforeEach(function() {
     // log out currently signed in user
     request('http://127.0.0.1:4568/logout', function(error, res, body) {});
@@ -62,8 +67,9 @@ describe('', function() {
   describe('Link creation:', function(){
 
     var requestWithSession = request.defaults({jar: true});
+    console.log(requestWithSession);
 
-var xbeforeEach = function(){};
+var beforeEach = function(){};
       // create a user that we can then log-in with
       new User({
           'username': 'Phillip',
@@ -213,7 +219,7 @@ var xbeforeEach = function(){};
 
   }); // 'Link creation'
 
-  xdescribe('Privileged Access:', function(){
+  describe('Privileged Access:', function(){
 
     it('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
       request('http://127.0.0.1:4568/', function(error, res, body) {
@@ -238,7 +244,7 @@ var xbeforeEach = function(){};
 
   }); // 'Priviledged Access'
 
-  xdescribe('Account Creation:', function(){
+  describe('Account Creation:', function(){
 
     it('Signup creates a user record', function(done) {
       var options = {
@@ -286,7 +292,7 @@ var xbeforeEach = function(){};
 
   }); // 'Account Creation'
 
-  xdescribe('Account Login:', function(){
+  describe('Account Login:', function(){
 
     var requestWithSession = request.defaults({jar: true});
 
@@ -333,4 +339,4 @@ var xbeforeEach = function(){};
 
   }); // 'Account Login'
 
-});
+//});

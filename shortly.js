@@ -25,11 +25,18 @@ app.use(express.static(__dirname + '/public'));
 
 app.get('/', 
 function(req, res) {
+  res.redirect('/login');
   res.render('index');
+});
+
+app.get('/login', 
+function(req, res){
+  res.render('login');
 });
 
 app.get('/create', 
 function(req, res) {
+  res.redirect('/login');
   res.render('index');
 });
 
@@ -40,15 +47,27 @@ function(req, res) {
   });
 });
 
+// var loggedIn = false;
+
 app.post('/links', 
 function(req, res) {
   var uri = req.body.url;
-
   if (!util.isValidUrl(uri)) {
     console.log('Not a valid url: ', uri);
     return res.send(404);
   }
 
+  // if(){
+  //   //go to this other post request
+  //   res.redirect('/login');
+  // }
+
+   db.knex('users').select('user_id').then(function(data){
+    console.log("are you there, dear user? ", data);
+    return data; 
+   });
+
+  
   new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
       res.send(200, found.attributes);
@@ -76,6 +95,16 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
+app.post('/login', 
+function(req, res){
+  console.log(req);
+  var username = req.body.username; 
+  var password = req.body.password; 
+  var isLoggedIn = 1; 
+  console.log(username);
+  db.knex('users').insert({user_id: username}, {password: password}, {loggedIn: isLoggedIn});
+  res.send(201); 
+});
 
 
 /************************************************************/

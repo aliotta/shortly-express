@@ -4,10 +4,10 @@ var crypto = require('crypto');
 
 var Link = db.Model.extend({
   tableName: 'urls',
-  hasTimestamps: true,
   defaults: {
     visits: 0
   },
+  hasTimestamps: true,
   clicks: function() {
     return this.hasMany(Click);
   },
