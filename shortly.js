@@ -57,15 +57,16 @@ function(req, res) {
     return res.send(404);
   }
 
-  // if(){
-  //   //go to this other post request
-  //   res.redirect('/login');
-  // }
-
-   db.knex('users').select('user_id').then(function(data){
+   db.knex('users').select('loggedIn').then(function(data){
     console.log("are you there, dear user? ", data);
-    return data; 
+      if(data[0].loggedIn === 0){
+        //go to this other post request
+        res.redirect('/links');
+      }
    });
+   
+
+
 
   
   new Link({ url: uri }).fetch().then(function(found) {
@@ -103,7 +104,8 @@ function(req, res){
   var isLoggedIn = 1; 
   console.log(username);
   db.knex('users').insert({user_id: username}, {password: password}, {loggedIn: isLoggedIn});
-  res.send(201); 
+  res.redirect('/links');
+  // res.send(201, "you're a rockstar"); 
 });
 
 
