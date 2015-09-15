@@ -68,15 +68,20 @@ function(req, res) {
     return res.send(404);
   }
 
-   db.knex('users').select('loggedIn').then(function(data){
-    console.log("are you there, dear user? ", data, "name ", data[0]);
-      if(data[0].loggedIn === 1){
-        //go to this other post request
-        //res.redirect('/index');
+  //db.knex('users').select('loggedIn')
+   db.knex('users').select('user_id', 'loggedIn').then(function(data){
+    console.log("are you there, dear user? ", data);
+      if(data[0].loggedIn === 0){
         console.log("you're logged in!");
-      } else if (data[0].loggedIn === 0){
-        console.log("YOu are not allowed");
-        res.redirect('/login');
+      } else if (data[0].loggedIn === 1){
+        //user does not exist
+        if(!true){
+          //create new user VIA SIGNUP
+        } else { 
+          //else, the user exists; redirect to login page. 
+          console.log("You are not allowed");
+          res.redirect('/login');
+        }
       }
    });
      
@@ -106,42 +111,54 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+//Here we need to sign up and create a new User. 
+app.post('/signup', 
+  function(req, res){
+    var username = req.body.username; 
+    var password = req.body.password; 
+    var isLoggedIn = 1; 
 
+    new User({
+      user_id: username, 
+      password: password
+    }).fetch().then(function(found){
+      if(found) {
+        //do something
+        console.log("I ALREADY EXIST! :D");
+      } else {
+        console.log("I am in the else statement! CREATE MEEEEE");
+        //If user is not found, then create the user and send it to the database. 
+        Users.create({
+          user_id: username, 
+          password: password, 
+          loggedIn: isLoggedIn
+        })
+        .then(function(){
+          res.redirect('/index');
+        });
+      }
+    });
+});
+
+//here we just need to log in the correct user and verify credentials.
 app.post('/login', 
 function(req, res){
+  //look up the user_id
   var username = req.body.username; 
+  //check the password 
   var password = req.body.password; 
-  var isLoggedIn = 1; 
 
-  new User({
+  db.knex('users').select('user_id', 'password').where({
     user_id: username, 
     password: password
-  }).fetch().then(function(found){
-    if(found) {
-      //do something
-      console.log("I ALREADY EXIST! :D");
+  }).then(function(data){
+    if(data.length === 0){
+      console.log("SIGN IN AGAIN"); 
+      res.redirect('/login');
     } else {
-      console.log("I am in the else statement! CREATE MEEEEE");
-      //If user is not found, then create the user and send it to the database. 
-      Users.create({
-        user_id: username, 
-        password: password, 
-        loggedIn: isLoggedIn
-      })
-      .then(function(){
-        res.send(200, "YAY!");
-      });
+      res.redirect('/index');
     }
-  })
-  console.log("trying to insert: ", username, " ", password, " ", isLoggedIn);
-  // db.knex.insert({user_id: username}, {password: password}, {salt: "1234"}, {loggedIn: isLoggedIn}).then(function(user){
-  //   console.log("Callback for insert ", user, " ", user.username, " ", user.password )
-  // });
-  //db.knex('users').update('password', password);
-  //db.knex('users').update('loggedIn', isLoggedIn);
-  console.log("Should have inserted")
-  res.redirect('/index');
-  res.send(201, "you're a rockstar"); 
+  });
 });
 
 
