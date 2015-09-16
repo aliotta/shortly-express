@@ -11,7 +11,7 @@ var User = require('./app/models/user');
 var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
-
+var bcrypt = require('bcrypt-nodejs');
 
 var app = express();
 
@@ -164,22 +164,35 @@ function(req, res){
   //check the password 
   var password = req.body.password; 
   //check if the username and password match
-  //userSession = {username: username, SID: req.sessionID};
+  
 
-  db.knex('users').select('username', 'password').where({
-    username: username, 
-    password: password
+  db.knex('users').select('username', 'salt').where({
+    username: username
   }).then(function(data){
-    //console.log(data);
-    if(data.length === 0){
-      console.log("SIGN IN AGAIN"); 
+    if(data.length<1){
       res.redirect('/login');
-    } else {
-      req.session.regenerate(function(){
-        req.session.user = username;
-        res.redirect('/index'); 
-      });
-    }
+      return; 
+    } 
+    console.log(data, "Dinosaurs ");
+    var salt = data[0].salt;
+    console.log("Low sodium ", salt) 
+
+    var hash = bcrypt.hashSync(password, salt);
+
+    db.knex('users').select('username').where({
+      username: username, 
+      password: hash 
+    }).then(function(data){
+      if(data.length === 0){
+        console.log("SIGN IN AGAIN: ", hash); 
+        res.redirect('/login');
+      } else {
+        req.session.regenerate(function(){
+          req.session.user = username;
+          res.redirect('/index'); 
+        });
+      }
+    });
   });
 });
 

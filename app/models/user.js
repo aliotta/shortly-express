@@ -11,53 +11,35 @@ var User = db.Model.extend({
   },
 
   
-  // initialize: function(){
-  //   //generate the salt for the user's password
-  //   bcrypt.genSalt(10, function(err, salt){
-  //     if(err){
-  //       return console.log(err); 
-  //     } else {
-  //       bcrypt.hash(users.password, salt, function(err, hash){
-  //         if(err) {
-  //           return console.log(err);
-  //         }else
-  //         console.log(hash); 
-  //         bcrypt.compare(user.password, hash, function(err, isMatch){
-  //           if(err){
-  //             return console.log(err); 
-  //           }
-  //           console.log("Do they match? ", isMatch);
-  //         });
-  //       });
-  //     }
-  //   });
-  // }
+  initialize: function(){
+    //generate the salt for the user's password
+    console.log("IS IT PARTY TIME??????????????");
+    this.on('creating', function(model, attrs, options){
+      var salt = bcrypt.genSaltSync(10);
+      var hash = bcrypt.hashSync(model.get('password'), salt);
+      model.set('password', hash);
+      model.set('salt', salt);
+    });
+  }
 });
 
 
 module.exports = User;
 
 /*
-Bcrypt.genSalt(SALT_WORK_FACTOR, function(err, salt) {
-        if(err) {
-                return console.error(err);
+bcrypt.genSaltSync(10, function(err, salt){
+        console.log("HEREEEREEREE");
+        if(err){
+          return console.log(err); 
+        } else {
+          bcrypt.hashSync(model.password, salt, null, function(err, hash){
+            if(err) {
+              return console.log(err);
+            } else {
+              console.log("hash" , hash)
+              model.set("password",hash);
+            } 
+          });
         }
-
-        Bcrypt.hash(pass, salt, function(err, hash) {
-                if(err) {
-                        return console.error(err);
-                }
-
-                console.log(hash);
-
-                Bcrypt.compare(pass, hash, function(err, isMatch) {
-                        if(err) {
-                                return console.error(err);
-                        }
-
-                        console.log('do they match?', isMatch);
-                });
-
-        });
-});
+      });
 */
