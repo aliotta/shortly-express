@@ -49,7 +49,7 @@ db.knex.schema.hasTable('users').then(function(exists){
     console.log(" Yo Dawg")
     db.knex.schema.createTable('users', function(user){
       user.increments('id').primary();
-      user.string('user_id', 25);
+      user.string('username', 25);
       user.string('password', 25);
       user.string('salt', 25);
       user.integer('loggedIn', 0);
@@ -59,14 +59,5 @@ db.knex.schema.hasTable('users').then(function(exists){
   }
 });
 
-// db.knex.schema.hasTable('UserTokens').then(function(exists){
-//   if(!exists){
-//     db.knex.createTable('UserTokens', function(user){
-//       user.increments('id').primary();
-//       user.string('user_id', 25).references('Users'); //foreign key
-//       user.string('token', 50);
-//     });
-//   }
-// });
 
 module.exports = db;

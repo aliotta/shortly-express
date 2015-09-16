@@ -2,7 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+var session = require("express-session");
+var uuid = require('uuid');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -11,7 +12,18 @@ var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
+
 var app = express();
+
+app.set('trust proxy', 1); 
+
+app.use(session({
+  genid: function(req){
+    console.log("Generated seesion ID"); //make the session id the token
+    return uuid.v4();
+  }, 
+  secret: "potatoes need salt"
+}));
 
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
@@ -23,15 +35,25 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
+function restrict(req, res, next) {
+  if (req.session.user) {
+    next();
+  } else {
+    req.session.error = 'Access denied!';
+    res.redirect('/login');
+  }
+}
+
+
 app.get('/', 
 function(req, res) {
   res.redirect('/login');
   res.render('index');
 });
 
-app.get('/login', 
+app.get('/login',  
 function(req, res){
-  res.render('login');
+  res.render('login')
 });
 
 app.get('/create', 
@@ -40,15 +62,14 @@ function(req, res) {
   res.render('index');
 });
 
-app.get('/links', 
+app.get('/links', restrict,
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
-  });
-  //res.render('index');
+    Links.reset().fetch().then(function(links) {
+      res.send(200, links.models);
+    });
 });
 
-app.get('/index', function(req, res){
+app.get('/index', restrict, function(req, res){
   res.render('index');
 });
 
@@ -56,8 +77,18 @@ app.get('/signup', function(req, res){
   res.render('signup');
 });
 
-app.get('/layout', function(req, res){
+app.get('/layout', restrict, function(req, res){
   res.render('layout');
+});
+
+app.post('/log-out', function(req, res){
+  console.log("Log me out bro ");
+  req.session.destroy(function(err){
+    if(err) {
+      console.log(err);
+    }
+  }); 
+  res.redirect('/login');
 });
 
 app.post('/links', 
@@ -67,23 +98,6 @@ function(req, res) {
     console.log('Not a valid url: ', uri);
     return res.send(404);
   }
-
-  //db.knex('users').select('loggedIn')
-   db.knex('users').select('user_id', 'loggedIn').then(function(data){
-    console.log("are you there, dear user? ", data);
-      if(data[0].loggedIn === 0){
-        console.log("you're logged in!");
-      } else if (data[0].loggedIn === 1){
-        //user does not exist
-        if(!true){
-          //create new user VIA SIGNUP
-        } else { 
-          //else, the user exists; redirect to login page. 
-          console.log("You are not allowed");
-          res.redirect('/login');
-        }
-      }
-   });
      
   new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
@@ -112,6 +126,7 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 //Here we need to sign up and create a new User. 
+//sorry, user. You still have to login again. 
 app.post('/signup', 
   function(req, res){
     var username = req.body.username; 
@@ -119,7 +134,7 @@ app.post('/signup',
     var isLoggedIn = 1; 
 
     new User({
-      user_id: username, 
+      username: username, 
       password: password
     }).fetch().then(function(found){
       if(found) {
@@ -129,34 +144,41 @@ app.post('/signup',
         console.log("I am in the else statement! CREATE MEEEEE");
         //If user is not found, then create the user and send it to the database. 
         Users.create({
-          user_id: username, 
+          username: username, 
           password: password, 
           loggedIn: isLoggedIn
         })
         .then(function(){
-          res.redirect('/index');
+          res.redirect('/');
         });
       }
     });
 });
 
+//var userSession;
 //here we just need to log in the correct user and verify credentials.
 app.post('/login', 
 function(req, res){
-  //look up the user_id
+  //look up the username
   var username = req.body.username; 
   //check the password 
   var password = req.body.password; 
+  //check if the username and password match
+  //userSession = {username: username, SID: req.sessionID};
 
-  db.knex('users').select('user_id', 'password').where({
-    user_id: username, 
+  db.knex('users').select('username', 'password').where({
+    username: username, 
     password: password
   }).then(function(data){
+    //console.log(data);
     if(data.length === 0){
       console.log("SIGN IN AGAIN"); 
       res.redirect('/login');
     } else {
-      res.redirect('/index');
+      req.session.regenerate(function(){
+        req.session.user = username;
+        res.redirect('/index'); 
+      });
     }
   });
 });
