@@ -21,7 +21,7 @@
     "express-partials": "~0.2.0",
     "express-session": "^1.7.2",
     "forever": "^0.10.11",
-    "knex": "~0.5.7",
+    "knex": "~0.19.5",
     "mocha": "^1.17.1",
     "nodemon": "^1.2.1",
     "request": "^2.34.0",
