@@ -8,7 +8,9 @@
   "private": true,
   "scripts": {
     "start": "./node_modules/.bin/nodemon --ignore node_modules shortly.js",
-    "test": "node shortly.js & ./node_modules/.bin/mocha --bail --reporter nyan test/ServerSpec.js; pkill -n node;"
+    "test": "node shortly.js & ./node_modules/.bin/mocha --bail --reporter nyan test/ServerSpec.js; pkill -n node;",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
@@ -16,15 +18,17 @@
     "body-parser": "^1.5.2",
     "bookshelf": "~0.6.4",
     "chai": "^1.9.0",
-    "ejs": "~0.8.5",
+    "ejs": "~2.5.5",
     "express": "~4.0.0",
     "express-partials": "~0.2.0",
     "express-session": "^1.7.2",
-    "forever": "^0.10.11",
-    "knex": "~0.5.7",
-    "mocha": "^1.17.1",
+    "forever": "^0.13.0",
+    "knex": "~0.19.5",
+    "mocha": "^6.2.3",
     "nodemon": "^1.2.1",
     "request": "^2.34.0",
-    "sqlite3": "~3.0.5"
-  }
+    "sqlite3": "~4.0.0",
+    "snyk": "^1.362.1"
+  },
+  "snyk": true
 }
