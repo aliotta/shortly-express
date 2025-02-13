@@ -20,7 +20,7 @@
     "express": "~4.0.0",
     "express-partials": "~0.2.0",
     "express-session": "^1.7.2",
-    "forever": "^0.10.11",
+    "forever": "^3.0.4",
     "knex": "~0.5.7",
     "mocha": "^1.17.1",
     "nodemon": "^1.2.1",
